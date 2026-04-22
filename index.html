@@ -612,6 +612,20 @@ var geoCoords={
 };
 var geoTimers={pu:null,do:null};
 var currentMapInstance=null;
+
+// Pre-computed OSRM geometries for the default Lyft HQ → Chase Center demo.
+// Baked in so the default state renders a real, turn-by-turn route with zero
+// network calls — this is what GitHub Pages / shared-IP origins need, since
+// the public OSRM demo server rate-limits us into a straight-line fallback.
+var DEFAULT_ROUTE={
+  curC:{lng:-122.395809,lat:37.783214},
+  puC:{lng:-122.39192,lat:37.77586},
+  doC:{lng:-122.38778,lat:37.76823},
+  preGeometry:{"type":"LineString","coordinates":[[-122.395783,37.782983],[-122.396052,37.782774],[-122.396782,37.782205],[-122.396872,37.782135],[-122.396919,37.782172],[-122.397092,37.782311],[-122.397204,37.782405],[-122.397319,37.782493],[-122.3974,37.782556],[-122.397496,37.78248],[-122.397668,37.782344],[-122.397697,37.782321],[-122.398062,37.782032],[-122.398365,37.781794],[-122.398924,37.781348],[-122.399076,37.781226],[-122.39954,37.780865],[-122.399635,37.780791],[-122.399505,37.780639],[-122.399363,37.780524],[-122.399146,37.780354],[-122.399059,37.780254],[-122.398331,37.779686],[-122.398188,37.779561],[-122.39806,37.779449],[-122.397615,37.779091],[-122.397372,37.778892],[-122.397145,37.778707],[-122.396803,37.77844],[-122.396706,37.778364],[-122.396608,37.778288],[-122.396516,37.778215],[-122.396412,37.778133],[-122.39627,37.778029],[-122.395981,37.777803],[-122.395824,37.777676],[-122.395521,37.777435],[-122.395452,37.77738],[-122.395185,37.777166],[-122.395156,37.777142],[-122.395071,37.777073],[-122.394945,37.77698],[-122.394601,37.776705],[-122.394302,37.776467],[-122.394275,37.776442],[-122.39419,37.776367],[-122.394135,37.776319],[-122.394079,37.77627],[-122.393986,37.776187],[-122.393922,37.776131],[-122.393815,37.776043],[-122.393718,37.775963],[-122.393497,37.775793],[-122.39348,37.77578],[-122.393404,37.77573],[-122.393373,37.775756],[-122.393309,37.77581],[-122.393274,37.775839],[-122.393235,37.775872],[-122.392584,37.776386]]},
+  mainGeometry:{"type":"LineString","coordinates":[[-122.392584,37.776386],[-122.392291,37.776617],[-122.391539,37.777211],[-122.391249,37.777444],[-122.391236,37.777455],[-122.391131,37.777537],[-122.391068,37.77749],[-122.390939,37.777392],[-122.390878,37.777346],[-122.390837,37.77727],[-122.390787,37.777233],[-122.390743,37.777199],[-122.390704,37.777164],[-122.390623,37.777132],[-122.39055,37.777081],[-122.39049,37.777023],[-122.390385,37.776885],[-122.39011,37.776545],[-122.390095,37.776524],[-122.390081,37.776495],[-122.390072,37.776467],[-122.390055,37.776378],[-122.390032,37.776192],[-122.39003,37.776176],[-122.390028,37.776143],[-122.390006,37.775958],[-122.389952,37.775426],[-122.389946,37.775367],[-122.389938,37.775283],[-122.389897,37.774874],[-122.389951,37.774679],[-122.38995,37.774664],[-122.389947,37.774602],[-122.389946,37.774512],[-122.389945,37.774482],[-122.389945,37.774442],[-122.389947,37.774435],[-122.389882,37.773735],[-122.389846,37.77338],[-122.389812,37.773021],[-122.38981,37.772998],[-122.389803,37.772925],[-122.389797,37.772857],[-122.389784,37.772721],[-122.389771,37.772592],[-122.389721,37.772068],[-122.389715,37.771999],[-122.389708,37.771931],[-122.389696,37.771808],[-122.389651,37.771327],[-122.389636,37.771173],[-122.389634,37.771156],[-122.389629,37.771096],[-122.389624,37.771045],[-122.389596,37.770755],[-122.389595,37.770741],[-122.389589,37.770677],[-122.389584,37.770627],[-122.389501,37.769763],[-122.389457,37.769302],[-122.389447,37.76919],[-122.389421,37.768923],[-122.389419,37.768901],[-122.389412,37.768823],[-122.389344,37.768827],[-122.389267,37.768831],[-122.389191,37.768836],[-122.389099,37.768841],[-122.38908,37.768843],[-122.388727,37.768864],[-122.388407,37.768883],[-122.387847,37.768917]]}
+};
+// Tight epsilon (~1 meter) to detect whether current state matches the default.
+function coordsMatch(a,b){return a&&b&&Math.abs(a.lng-b.lng)<0.00002&&Math.abs(a.lat-b.lat)<0.00002;}
 var MAP_ERROR_HTML='<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#e8e6de;color:#6B636B;font-family:Inter,sans-serif;font-size:13px;text-align:center;padding:16px">Map style unavailable</div>';
 
 function geocodeDebounce(input,dropdownId,which){
@@ -735,6 +749,24 @@ function deriveCurrentLocation(puC, doC){
   return {lat:puC.lat+dLat,lng:puC.lng+dLng};
 }
 
+// Decode a Google-style encoded polyline string into [[lng,lat],...] pairs.
+// Valhalla uses precision 6 (1e-6 degree resolution) by default. Reused for any
+// provider that returns encoded polylines instead of GeoJSON.
+function decodePolyline(str, precision){
+  var index=0, lat=0, lng=0, coords=[], factor=Math.pow(10, precision||6);
+  var byte, shift, result;
+  while(index<str.length){
+    shift=0; result=0;
+    do { byte=str.charCodeAt(index++)-63; result|=(byte&0x1f)<<shift; shift+=5; } while(byte>=0x20);
+    lat+=(result&1)?~(result>>1):(result>>1);
+    shift=0; result=0;
+    do { byte=str.charCodeAt(index++)-63; result|=(byte&0x1f)<<shift; shift+=5; } while(byte>=0x20);
+    lng+=(result&1)?~(result>>1):(result>>1);
+    coords.push([lng/factor, lat/factor]);
+  }
+  return coords;
+}
+
 // Compass bearing in degrees (0=N, 90=E) from one coord to another.
 function bearingDeg(from, to){
   var lat1=from.lat*Math.PI/180, lat2=to.lat*Math.PI/180;
@@ -801,7 +833,10 @@ function initMap(dispatch){
     // We have coords and MapLibre — show live map
     if(staticImg) staticImg.style.display='none';
     mapContainer.style.display='block';
-    var lyftStyle='https://mapping.lyft.com/styles/latest/navigation/rebranded_light.json';
+    // OpenFreeMap Positron — free vector style, CORS-open (Access-Control-Allow-Origin: *),
+    // no API key required. Visually close to Lyft's rebranded_light: minimalist light gray.
+    // Works from any origin (including *.github.io), unlike mapping.lyft.com.
+    var lyftStyle='https://tiles.openfreemap.org/styles/positron';
     var fallbackStyle={version:8,sources:{'osm-tiles':{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,attribution:'© OpenStreetMap'}},layers:[{id:'osm',type:'raster',source:'osm-tiles'}]};
     var isQueued=(dispatch==='Queued'||dispatch==='Swap');
     var defaultCenter=[-122.4194,37.7749];
@@ -871,15 +906,49 @@ function initMap(dispatch){
           }
 
           if(puC&&doC){
+            // If the current state exactly matches the baked-in default demo,
+            // skip the network entirely and use the pre-computed OSRM geometry.
+            // Guarantees a real turn-by-turn route on first paint, even on
+            // rate-limited origins (GitHub Pages, shared IPs, etc.).
+            var isDefault=coordsMatch(puC,DEFAULT_ROUTE.puC)&&coordsMatch(doC,DEFAULT_ROUTE.doC)&&(!curC||coordsMatch(curC,DEFAULT_ROUTE.curC));
+
             // Fetch a single-leg route between two points; fall back to a straight line.
+            // Uses FOSSGIS-hosted Valhalla (CORS-open, no API key) — a reliable
+            // alternative to router.project-osrm.org, which CORS-blocks non-Lyft
+            // origins like *.github.io. 4s timeout so slow calls can't stall.
             function fetchLeg(a,b){
-              return fetch('https://router.project-osrm.org/route/v1/driving/'+a.lng+','+a.lat+';'+b.lng+','+b.lat+'?overview=full&geometries=geojson')
-                .then(function(r){return r.json();})
-                .then(function(d){return d.routes&&d.routes[0]?d.routes[0].geometry:{type:'LineString',coordinates:[[a.lng,a.lat],[b.lng,b.lat]]};})
-                .catch(function(){return {type:'LineString',coordinates:[[a.lng,a.lat],[b.lng,b.lat]]};});
+              var straight={type:'LineString',coordinates:[[a.lng,a.lat],[b.lng,b.lat]]};
+              var ctrl=(typeof AbortController!=='undefined')?new AbortController():null;
+              var timeoutId=ctrl?setTimeout(function(){ctrl.abort();},4000):null;
+              var opts={
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({
+                  locations:[{lat:a.lat,lon:a.lng},{lat:b.lat,lon:b.lng}],
+                  costing:'auto',
+                  directions_options:{format:'json'}
+                })
+              };
+              if(ctrl) opts.signal=ctrl.signal;
+              return fetch('https://valhalla1.openstreetmap.de/route',opts)
+                .then(function(r){
+                  if(timeoutId)clearTimeout(timeoutId);
+                  if(!r.ok){console.warn('[route] Valhalla HTTP '+r.status+' — using straight line');throw new Error('valhalla '+r.status);}
+                  return r.json();
+                })
+                .then(function(d){
+                  var leg=d&&d.trip&&d.trip.legs&&d.trip.legs[0];
+                  if(!leg||!leg.shape){console.warn('[route] Valhalla returned no route ('+((d.trip&&d.trip.status_message)||'empty')+') — using straight line');return straight;}
+                  return {type:'LineString',coordinates:decodePolyline(leg.shape,6)};
+                })
+                .catch(function(e){
+                  if(timeoutId)clearTimeout(timeoutId);
+                  console.warn('[route] Valhalla fetch failed — using straight line:',(e&&e.message)||e);
+                  return straight;
+                });
             }
-            var preLegP=curC?fetchLeg(curC,puC):Promise.resolve(null);
-            var mainLegP=fetchLeg(puC,doC);
+            var preLegP=curC?(isDefault?Promise.resolve(DEFAULT_ROUTE.preGeometry):fetchLeg(curC,puC)):Promise.resolve(null);
+            var mainLegP=isDefault?Promise.resolve(DEFAULT_ROUTE.mainGeometry):fetchLeg(puC,doC);
             Promise.all([preLegP,mainLegP]).then(function(results){
               var preGeo=results[0];
               var mainGeo=results[1];
