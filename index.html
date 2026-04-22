@@ -228,7 +228,20 @@ section#builder > div[style*="grid-template-columns"]{grid-template-columns:1fr 
 <section id="builder">
 <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--pink);margin-bottom:8px;font-family:'Inter',sans-serif">Accept screen</div>
 <h2 style="font-size:36px;font-weight:800;letter-spacing:-0.5px;line-height:1.1;color:var(--cherry);margin-bottom:16px;font-family:'Inter Tight',sans-serif">Build your own variation</h2>
-<p style="font-size:16px;color:var(--g60);max-width:600px;margin-bottom:32px;font-family:'Inter',sans-serif">Configure custom accept screen content. The preview updates live as you type.</p>
+<p style="font-size:16px;color:var(--g60);max-width:600px;margin-bottom:20px;font-family:'Inter',sans-serif">Configure custom accept screen content. The preview updates live as you type.</p>
+<div style="background:var(--card);border:1px solid var(--g10);border-radius:10px;padding:14px 16px;margin-bottom:32px;max-width:640px;display:flex;align-items:flex-start;gap:12px;font-family:'Inter',sans-serif">
+<div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:rgba(207,0,144,0.08);display:flex;align-items:center;justify-content:center;margin-top:1px">
+<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#cf0090" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><line x1="8" y1="5" x2="8" y2="8.5"/><circle cx="8" cy="11" r="0.5" fill="#cf0090"/></svg>
+</div>
+<div style="flex:1;min-width:0">
+<div style="font-size:13px;font-weight:600;color:var(--cherry);margin-bottom:4px;line-height:1.4">Map not loading?</div>
+<div style="font-size:13px;color:var(--g60);line-height:1.55">Download the source and run <code style="font-family:'Inter Tight',monospace;font-size:12px;background:var(--g5);padding:1px 6px;border-radius:4px;color:var(--g80)">index.html</code> locally to bypass any network restrictions. If issues persist, reach out to <strong style="color:var(--g80);font-weight:600">abdullaht</strong> on Slack.</div>
+<a href="mockbuilder.zip" download style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-size:12px;font-weight:600;color:var(--purple);text-decoration:none;padding:6px 12px;border:1px solid var(--g10);border-radius:20px;transition:all 0.2s;background:#fff" onmouseover="this.style.borderColor='var(--purple)';this.style.color='var(--pink)'" onmouseout="this.style.borderColor='var(--g10)';this.style.color='var(--purple)'">
+<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v9"/><path d="M4.5 7.5L8 11l3.5-3.5"/><path d="M2.5 13.5h11"/></svg>
+Download .zip
+</a>
+</div>
+</div>
 <div style="display:grid;grid-template-columns:1fr 380px;gap:40px;align-items:start">
 <div class="builder-wrap">
 <div class="builder-grid">
@@ -246,10 +259,16 @@ section#builder > div[style*="grid-template-columns"]{grid-template-columns:1fr 
 <div class="builder-field"><label>Bonus</label><input type="text" id="bBonus" value="$2.50" placeholder="$0 for none" oninput="livePreview()"></div>
 <div class="builder-field"><label>Pickup duration</label><input type="text" id="bPuDur" value="6 min" oninput="livePreview()"></div>
 <div class="builder-field"><label>Pickup distance</label><input type="text" id="bPuDist" value="2.1 mi" oninput="livePreview()"></div>
+<div class="builder-field" style="grid-column:1/-1"><label>Current location</label><input type="text" id="bCurAddr" value="2nd St & Howard St, San Francisco, CA" placeholder="Leave blank to auto-place near pickup" oninput="geocodeDebounce(this,'curDropdown','cur')" onfocus="showGeoDropdown('curDropdown')" autocomplete="off"><div id="curDropdown" class="geo-dropdown"></div></div>
 <div class="builder-field" style="grid-column:1/-1"><label>Pickup address</label><input type="text" id="bPuAddr" value="185 Berry St, San Francisco, CA" oninput="geocodeDebounce(this,'puDropdown','pu')" onfocus="showGeoDropdown('puDropdown')" autocomplete="off"><div id="puDropdown" class="geo-dropdown"></div></div>
 <div class="builder-field"><label>Drop-off duration</label><input type="text" id="bDoDur" value="6 min" oninput="livePreview()"></div>
 <div class="builder-field"><label>Drop-off distance</label><input type="text" id="bDoDist" value="1.1 mi" oninput="livePreview()"></div>
 <div class="builder-field" style="grid-column:1/-1"><label>Drop-off address</label><input type="text" id="bDoAddr" value="Chase Center, 1 Warriors Way, San Francisco, CA" oninput="geocodeDebounce(this,'doDropdown','do')" onfocus="showGeoDropdown('doDropdown')" autocomplete="off"><div id="doDropdown" class="geo-dropdown"></div></div>
+<div style="grid-column:1/-1;display:flex;align-items:center;gap:10px;padding:4px 0">
+  <input type="checkbox" id="bAutoFill" checked onchange="onAutoFillToggle()" style="width:15px;height:15px;min-width:15px;padding:0;border:none;cursor:pointer;accent-color:var(--purple);margin:0;flex-shrink:0">
+  <label for="bAutoFill" style="margin:0;font-size:13px;font-weight:500;color:var(--g80);cursor:pointer;font-family:'Inter',sans-serif">Auto-fill duration &amp; distance from route</label>
+  <span style="font-size:12px;color:var(--g60);font-weight:400;font-family:'Inter',sans-serif">— uncheck to enter values manually</span>
+</div>
 <div class="builder-field"><label>Number of attributes</label><select id="bAttrCount" onchange="updateAttrDropdowns();livePreview()"><option value="0">0</option><option value="1" selected>1</option><option value="2">2</option></select></div>
 <div class="builder-field" id="bAttr1Wrap"><label>Attribute 1</label><select id="bAttr1" onchange="livePreview()">
 <option>Offer assistance</option>
@@ -608,9 +627,10 @@ updateAttrDropdowns();
 // renders immediately on page load without waiting on Nominatim.
 var geoCoords={
   pu:{lng:-122.39192,lat:37.77586}, // 185 Berry St (Lyft HQ), San Francisco
-  do:{lng:-122.38778,lat:37.76823}  // Chase Center, 1 Warriors Way, San Francisco
+  do:{lng:-122.38778,lat:37.76823}, // Chase Center, 1 Warriors Way, San Francisco
+  cur:{lng:-122.395809,lat:37.783214} // 2nd & Howard (SoMa) — matches DEFAULT_ROUTE.curC
 };
-var geoTimers={pu:null,do:null};
+var geoTimers={pu:null,do:null,cur:null};
 var currentMapInstance=null;
 
 // Pre-computed OSRM geometries for the default Lyft HQ → Chase Center demo.
@@ -621,6 +641,10 @@ var DEFAULT_ROUTE={
   curC:{lng:-122.395809,lat:37.783214},
   puC:{lng:-122.39192,lat:37.77586},
   doC:{lng:-122.38778,lat:37.76823},
+  // Baked summaries match the seeded field defaults, so first paint with the
+  // autofill checkbox on is a no-op visually (no flicker, no network needed).
+  preSummary:{time:6*60, length:2.1},  // curC → puC : "6 min · 2.1 mi"
+  mainSummary:{time:6*60, length:1.1}, // puC  → doC : "6 min · 1.1 mi"
   preGeometry:{"type":"LineString","coordinates":[[-122.395783,37.782983],[-122.396052,37.782774],[-122.396782,37.782205],[-122.396872,37.782135],[-122.396919,37.782172],[-122.397092,37.782311],[-122.397204,37.782405],[-122.397319,37.782493],[-122.3974,37.782556],[-122.397496,37.78248],[-122.397668,37.782344],[-122.397697,37.782321],[-122.398062,37.782032],[-122.398365,37.781794],[-122.398924,37.781348],[-122.399076,37.781226],[-122.39954,37.780865],[-122.399635,37.780791],[-122.399505,37.780639],[-122.399363,37.780524],[-122.399146,37.780354],[-122.399059,37.780254],[-122.398331,37.779686],[-122.398188,37.779561],[-122.39806,37.779449],[-122.397615,37.779091],[-122.397372,37.778892],[-122.397145,37.778707],[-122.396803,37.77844],[-122.396706,37.778364],[-122.396608,37.778288],[-122.396516,37.778215],[-122.396412,37.778133],[-122.39627,37.778029],[-122.395981,37.777803],[-122.395824,37.777676],[-122.395521,37.777435],[-122.395452,37.77738],[-122.395185,37.777166],[-122.395156,37.777142],[-122.395071,37.777073],[-122.394945,37.77698],[-122.394601,37.776705],[-122.394302,37.776467],[-122.394275,37.776442],[-122.39419,37.776367],[-122.394135,37.776319],[-122.394079,37.77627],[-122.393986,37.776187],[-122.393922,37.776131],[-122.393815,37.776043],[-122.393718,37.775963],[-122.393497,37.775793],[-122.39348,37.77578],[-122.393404,37.77573],[-122.393373,37.775756],[-122.393309,37.77581],[-122.393274,37.775839],[-122.393235,37.775872],[-122.392584,37.776386]]},
   mainGeometry:{"type":"LineString","coordinates":[[-122.392584,37.776386],[-122.392291,37.776617],[-122.391539,37.777211],[-122.391249,37.777444],[-122.391236,37.777455],[-122.391131,37.777537],[-122.391068,37.77749],[-122.390939,37.777392],[-122.390878,37.777346],[-122.390837,37.77727],[-122.390787,37.777233],[-122.390743,37.777199],[-122.390704,37.777164],[-122.390623,37.777132],[-122.39055,37.777081],[-122.39049,37.777023],[-122.390385,37.776885],[-122.39011,37.776545],[-122.390095,37.776524],[-122.390081,37.776495],[-122.390072,37.776467],[-122.390055,37.776378],[-122.390032,37.776192],[-122.39003,37.776176],[-122.390028,37.776143],[-122.390006,37.775958],[-122.389952,37.775426],[-122.389946,37.775367],[-122.389938,37.775283],[-122.389897,37.774874],[-122.389951,37.774679],[-122.38995,37.774664],[-122.389947,37.774602],[-122.389946,37.774512],[-122.389945,37.774482],[-122.389945,37.774442],[-122.389947,37.774435],[-122.389882,37.773735],[-122.389846,37.77338],[-122.389812,37.773021],[-122.38981,37.772998],[-122.389803,37.772925],[-122.389797,37.772857],[-122.389784,37.772721],[-122.389771,37.772592],[-122.389721,37.772068],[-122.389715,37.771999],[-122.389708,37.771931],[-122.389696,37.771808],[-122.389651,37.771327],[-122.389636,37.771173],[-122.389634,37.771156],[-122.389629,37.771096],[-122.389624,37.771045],[-122.389596,37.770755],[-122.389595,37.770741],[-122.389589,37.770677],[-122.389584,37.770627],[-122.389501,37.769763],[-122.389457,37.769302],[-122.389447,37.76919],[-122.389421,37.768923],[-122.389419,37.768901],[-122.389412,37.768823],[-122.389344,37.768827],[-122.389267,37.768831],[-122.389191,37.768836],[-122.389099,37.768841],[-122.38908,37.768843],[-122.388727,37.768864],[-122.388407,37.768883],[-122.387847,37.768917]]}
 };
@@ -630,6 +654,9 @@ var MAP_ERROR_HTML='<div style="display:flex;align-items:center;justify-content:
 
 function geocodeDebounce(input,dropdownId,which){
   clearTimeout(geoTimers[which]);
+  // If the current-location field is cleared, drop its coords so the map
+  // falls back to the auto-derived puck placement near the pickup.
+  if(which==='cur' && !input.value.trim()){geoCoords.cur=null;}
   geoTimers[which]=setTimeout(function(){geocodeSearch(input.value,dropdownId,which)},400);
   livePreview();
 }
@@ -659,7 +686,7 @@ function geocodeSearch(query,dropdownId,which){
       item.className='geo-item';
       item.textContent=r.display_name;
       item.onclick=function(){
-        var inputId=which==='pu'?'bPuAddr':'bDoAddr';
+        var inputId=which==='pu'?'bPuAddr':(which==='cur'?'bCurAddr':'bDoAddr');
         // Build shorter label from address parts
         var parts=[];
         if(r.address){
@@ -687,7 +714,7 @@ function geocodeSearch(query,dropdownId,which){
 }
 // Close dropdowns on outside click
 document.addEventListener('click',function(e){
-  ['puDropdown','doDropdown'].forEach(function(id){
+  ['puDropdown','doDropdown','curDropdown'].forEach(function(id){
     var dd=document.getElementById(id);
     if(dd && !dd.parentElement.contains(e.target)) dd.classList.remove('open');
   });
@@ -811,6 +838,55 @@ function computeMapPadding(){
   return pad;
 }
 
+// Re-run livePreview when the autofill checkbox is toggled ON, so the fields
+// repopulate immediately from the current route (instead of waiting for the
+// user to edit an address). Toggling OFF is a no-op — existing values stay.
+function onAutoFillToggle(){
+  var el=document.getElementById('bAutoFill');
+  if(el&&el.checked){ livePreview(); }
+}
+
+// Format a routed-leg duration (in seconds) as e.g. "6 min" or "1 hr 14 min".
+function formatDuration(sec){
+  if(sec==null||isNaN(sec))return '';
+  var mins=Math.max(1,Math.round(sec/60));
+  if(mins<60) return mins+' min';
+  var h=Math.floor(mins/60), m=mins%60;
+  return m?h+' hr '+m+' min':h+' hr';
+}
+// Format a routed-leg length (in miles) as e.g. "2.1 mi" (minimum 0.1).
+function formatDistance(mi){
+  if(mi==null||isNaN(mi))return '';
+  return Math.max(0.1,mi).toFixed(1)+' mi';
+}
+// Push the current duration/distance field values into the rendered ride card
+// without re-running livePreview (which would re-init the map and re-fetch).
+function applyAutofillToCard(){
+  var puDur=document.getElementById('bPuDur').value;
+  var puDist=document.getElementById('bPuDist').value;
+  var doDur=document.getElementById('bDoDur').value;
+  var doDist=document.getElementById('bDoDist').value;
+  var preview=document.getElementById('builderPreview');
+  if(!preview) return;
+  var puPrim=preview.querySelector('.rc-loc-pu .rc-loc-primary');
+  var doPrim=preview.querySelector('.rc-loc-do .rc-loc-primary');
+  if(puPrim) puPrim.textContent=puDur+' · '+puDist;
+  if(doPrim) doPrim.textContent=doDur+' · '+doDist;
+  // Keep the hourly-rate line in sync with the new total trip time.
+  var fareNum=parseFloat(document.getElementById('bFare').value.replace(/[^0-9.]/g,''))||0;
+  var puMinutes=parseFloat(puDur.replace(/[^0-9.]/g,''))||0;
+  var doMinutes=parseFloat(doDur.replace(/[^0-9.]/g,''))||0;
+  var totalMinutes=puMinutes+doMinutes;
+  var rateEl=preview.querySelector('.rc-rate');
+  if(rateEl){
+    if(fareNum>0&&totalMinutes>0){
+      rateEl.textContent='$'+(fareNum/(totalMinutes/60)).toFixed(2)+'/hr est. rate for this ride';
+    }else{
+      rateEl.textContent='Est. rate for this ride';
+    }
+  }
+}
+
 function initMap(dispatch){
   requestAnimationFrame(function(){
     var mapContainer=document.getElementById('maplibre-container');
@@ -874,8 +950,9 @@ function initMap(dispatch){
         map.on('load',function(){
           console.log('Map loaded with style: '+(isFallback?'fallback':'Lyft'));
           if(!isFallback){ reduceMapNoise(map); }
-          // Mock the driver's current location (only when both pickup & dropoff exist).
-          var curC=(puC&&doC)?deriveCurrentLocation(puC,doC):null;
+          // Driver's current location: prefer the user-entered value, otherwise
+          // auto-derive near the pickup (only when both pickup & dropoff exist).
+          var curC=geoCoords.cur||((puC&&doC)?deriveCurrentLocation(puC,doC):null);
 
           // PICKUP marker — Lyft pickup pin, 22×22 (shadow baked into SVG).
           if(puC){
@@ -917,7 +994,7 @@ function initMap(dispatch){
             // alternative to router.project-osrm.org, which CORS-blocks non-Lyft
             // origins like *.github.io. 4s timeout so slow calls can't stall.
             function fetchLeg(a,b){
-              var straight={type:'LineString',coordinates:[[a.lng,a.lat],[b.lng,b.lat]]};
+              var straight={geometry:{type:'LineString',coordinates:[[a.lng,a.lat],[b.lng,b.lat]]},summary:null};
               var ctrl=(typeof AbortController!=='undefined')?new AbortController():null;
               var timeoutId=ctrl?setTimeout(function(){ctrl.abort();},4000):null;
               var opts={
@@ -926,6 +1003,7 @@ function initMap(dispatch){
                 body:JSON.stringify({
                   locations:[{lat:a.lat,lon:a.lng},{lat:b.lat,lon:b.lng}],
                   costing:'auto',
+                  units:'miles',
                   directions_options:{format:'json'}
                 })
               };
@@ -939,7 +1017,12 @@ function initMap(dispatch){
                 .then(function(d){
                   var leg=d&&d.trip&&d.trip.legs&&d.trip.legs[0];
                   if(!leg||!leg.shape){console.warn('[route] Valhalla returned no route ('+((d.trip&&d.trip.status_message)||'empty')+') — using straight line');return straight;}
-                  return {type:'LineString',coordinates:decodePolyline(leg.shape,6)};
+                  // Valhalla returns summary.time in seconds, summary.length in miles (we requested units:miles).
+                  var s=leg.summary||(d.trip&&d.trip.summary)||null;
+                  return {
+                    geometry:{type:'LineString',coordinates:decodePolyline(leg.shape,6)},
+                    summary:s?{time:s.time,length:s.length}:null
+                  };
                 })
                 .catch(function(e){
                   if(timeoutId)clearTimeout(timeoutId);
@@ -947,11 +1030,31 @@ function initMap(dispatch){
                   return straight;
                 });
             }
-            var preLegP=curC?(isDefault?Promise.resolve(DEFAULT_ROUTE.preGeometry):fetchLeg(curC,puC)):Promise.resolve(null);
-            var mainLegP=isDefault?Promise.resolve(DEFAULT_ROUTE.mainGeometry):fetchLeg(puC,doC);
+            var preLegP=curC?(isDefault?Promise.resolve({geometry:DEFAULT_ROUTE.preGeometry,summary:DEFAULT_ROUTE.preSummary}):fetchLeg(curC,puC)):Promise.resolve(null);
+            var mainLegP=isDefault?Promise.resolve({geometry:DEFAULT_ROUTE.mainGeometry,summary:DEFAULT_ROUTE.mainSummary}):fetchLeg(puC,doC);
             Promise.all([preLegP,mainLegP]).then(function(results){
-              var preGeo=results[0];
-              var mainGeo=results[1];
+              var preResult=results[0];
+              var mainResult=results[1];
+              var preGeo=preResult&&preResult.geometry;
+              var mainGeo=mainResult&&mainResult.geometry;
+              // Autofill duration & distance fields from the routed summaries (if enabled).
+              var autoEl=document.getElementById('bAutoFill');
+              if(autoEl&&autoEl.checked){
+                var changed=false;
+                if(preResult&&preResult.summary){
+                  var pd=formatDuration(preResult.summary.time), pl=formatDistance(preResult.summary.length);
+                  var puDurEl=document.getElementById('bPuDur'), puDistEl=document.getElementById('bPuDist');
+                  if(puDurEl.value!==pd){puDurEl.value=pd;changed=true;}
+                  if(puDistEl.value!==pl){puDistEl.value=pl;changed=true;}
+                }
+                if(mainResult&&mainResult.summary){
+                  var md=formatDuration(mainResult.summary.time), ml=formatDistance(mainResult.summary.length);
+                  var doDurEl=document.getElementById('bDoDur'), doDistEl=document.getElementById('bDoDist');
+                  if(doDurEl.value!==md){doDurEl.value=md;changed=true;}
+                  if(doDistEl.value!==ml){doDistEl.value=ml;changed=true;}
+                }
+                if(changed){ applyAutofillToCard(); }
+              }
               var bounds=new maplibregl.LngLatBounds();
               if(curC){bounds.extend([curC.lng,curC.lat]);}
               bounds.extend([puC.lng,puC.lat]);
@@ -1038,6 +1141,7 @@ var msg='Generate a '+deviceVal.replace(',','x')+' @2x PNG of the accept screen 
 +'Bonus: '+bonusStr+'\n'
 +'Pickup: '+document.getElementById('bPuDur').value+' / '+document.getElementById('bPuDist').value+' / '+document.getElementById('bPuAddr').value+'\n'
 +'Dropoff: '+document.getElementById('bDoDur').value+' / '+document.getElementById('bDoDist').value+' / '+document.getElementById('bDoAddr').value+'\n'
++'Current: '+(document.getElementById('bCurAddr').value||'(auto)')+'\n'
 +'Rider: '+document.getElementById('bRider').value+' (rating '+document.getElementById('bRating').value+', verified: '+document.getElementById('bVerified').value+')\n'
 +'Ride type: '+document.getElementById('bType').value+'\n'
 +'Dispatch: '+document.getElementById('bDispatch').value+'\n'
@@ -1270,6 +1374,7 @@ m=line.match(/^Fare:\s*(.+)/i);if(m)map.fare=m[1].trim();
 m=line.match(/^Bonus:\s*(.+)/i);if(m)map.bonus=m[1].trim();
 m=line.match(/^Pickup:\s*(.+)/i);if(m){var p=m[1].split('/');if(p.length>=3){map.puDur=p[0].trim();map.puDist=p[1].trim();map.puAddr=p[2].trim()}}
 m=line.match(/^Dropoff:\s*(.+)/i);if(m){var p=m[1].split('/');if(p.length>=3){map.doDur=p[0].trim();map.doDist=p[1].trim();map.doAddr=p[2].trim()}}
+m=line.match(/^Current:\s*(.+)/i);if(m)map.curAddr=m[1].trim();
 m=line.match(/^Rider:\s*([^(]+)\(rating\s*([^,]+),\s*verified:\s*(\w+)/i);if(m){map.rider=m[1].trim();map.rating=m[2].trim();map.verified=m[3].trim()}
 m=line.match(/^Ride type:\s*(.+)/i);if(m)map.type=m[1].trim();
 m=line.match(/^Dispatch:\s*(.+)/i);if(m)map.dispatch=m[1].trim();
@@ -1284,6 +1389,10 @@ if(map.puAddr){document.getElementById('bPuAddr').value=map.puAddr}
 if(map.doDur){document.getElementById('bDoDur').value=map.doDur}
 if(map.doDist){document.getElementById('bDoDist').value=map.doDist}
 if(map.doAddr){document.getElementById('bDoAddr').value=map.doAddr}
+if(map.curAddr!==undefined){
+  if(map.curAddr==='(auto)'||map.curAddr===''){document.getElementById('bCurAddr').value='';geoCoords.cur=null;}
+  else{document.getElementById('bCurAddr').value=map.curAddr;geoCoords.cur=null;setTimeout(initDefaultCoords,0);}
+}
 if(map.rider){document.getElementById('bRider').value=map.rider}
 if(map.rating){document.getElementById('bRating').value=map.rating}
 if(map.verified){document.getElementById('bVerified').value=map.verified==='yes'?'yes':'no'}
@@ -1306,15 +1415,18 @@ function resetBuilder(){
 document.getElementById('bDevice').selectedIndex=0;
 document.getElementById('bFare').value='$20.85';
 document.getElementById('bBonus').value='$2.50';
+document.getElementById('bAutoFill').checked=true;
 document.getElementById('bPuDur').value='6 min';
 document.getElementById('bPuDist').value='2.1 mi';
 document.getElementById('bPuAddr').value='185 Berry St, San Francisco, CA';
 document.getElementById('bDoDur').value='6 min';
 document.getElementById('bDoDist').value='1.1 mi';
 document.getElementById('bDoAddr').value='Chase Center, 1 Warriors Way, San Francisco, CA';
+document.getElementById('bCurAddr').value='2nd St & Howard St, San Francisco, CA';
 geoCoords={
   pu:{lng:-122.39192,lat:37.77586},
-  do:{lng:-122.38778,lat:37.76823}
+  do:{lng:-122.38778,lat:37.76823},
+  cur:{lng:-122.395809,lat:37.783214}
 };
 // Re-geocode after reset so the map re-renders with default locations
 setTimeout(initDefaultCoords,0);
@@ -1344,10 +1456,11 @@ livePreview();
 // If coords are already seeded (see `geoCoords` above), skip Nominatim to
 // avoid a visible re-fit when the refined result lands.
 function initDefaultCoords(){
-  if(geoCoords.pu && geoCoords.do){ livePreview(); return; }
+  if(geoCoords.pu && geoCoords.do && geoCoords.cur){ livePreview(); return; }
   var puQuery=document.getElementById('bPuAddr').value;
   var doQuery=document.getElementById('bDoAddr').value;
-  var pending=2;
+  var curQuery=document.getElementById('bCurAddr').value;
+  var pending=3;
   function done(){if(--pending===0)livePreview();}
   function geocodeOne(query,which){
     if(!query||query.length<3){done();return;}
@@ -1367,6 +1480,7 @@ function initDefaultCoords(){
   }
   geocodeOne(puQuery,'pu');
   geocodeOne(doQuery,'do');
+  geocodeOne(curQuery,'cur');
 }
 initDefaultCoords();
 
